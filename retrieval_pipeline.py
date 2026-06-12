@@ -1,6 +1,7 @@
 from langchain_chroma import Chroma
 from dotenv import load_dotenv
-from langchain_openai import OpenAIEmbeddings
+from langchain_openai import ChatOpenAI, OpenAI, OpenAIEmbeddings
+from langchain_core.messages import HumanMessage, SystemMessage
 
 load_dotenv()
 
@@ -30,4 +31,20 @@ for i, doc in enumerate(results):
     print(f"Metadata: {doc.metadata}")
     print("-" * 50)
 
-    
+
+combined_document = "\n\n".join([doc.page_content for doc in results])
+
+prompt = f"Answer the following question based on the provided documents:\n\n{combined_document}\n\nQuestion: {query} \n Please provide a concise answer. If the answer is not found in the documents, say 'Answer not found in the provided documents.'"
+
+model = ChatOpenAI(model="gpt-4o", temperature=0.2)
+
+messages = [
+    SystemMessage(content="You are a helpful assistant that answers questions based on the provided documents."),
+    HumanMessage(content=prompt)
+]
+
+
+result = model.invoke(messages)
+
+print("\nAnswer:")
+print(result)
